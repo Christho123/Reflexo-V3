@@ -6,7 +6,7 @@ User = get_user_model()
 
 class ProfileService:
     """
-    Servicio para gestión de perfiles de usuario.
+    Servicio para gestion de perfiles de usuario.
     """
     
     @staticmethod
@@ -15,7 +15,7 @@ class ProfileService:
         Crear un perfil para un usuario
         
         Args:
-            user: Usuario al que se le creará el perfil
+            user: Usuario al que se le creara el perfil
             profile_data: Datos del perfil
             
         Returns:
@@ -40,7 +40,7 @@ class ProfileService:
         Actualizar el perfil de un usuario
         
         Args:
-            user: Usuario cuyo perfil se actualizará
+            user: Usuario cuyo perfil se actualizara
             profile_data: Datos a actualizar
             
         Returns:
@@ -75,7 +75,7 @@ class ProfileService:
     @staticmethod
     def get_public_profiles():
         """
-        Obtener todos los perfiles públicos
+        Obtener todos los perfiles publicos
         
         Returns:
             QuerySet: Usuarios activos
@@ -109,7 +109,6 @@ class ProfileService:
         Returns:
             int: Porcentaje de completitud (0-100)
         """
-        """
         # Campos obligatorios que deben estar completos
         required_fields = [
             'name', 'email', 'phone'
@@ -139,14 +138,13 @@ class ProfileService:
     @staticmethod
     def get_profile_stats(user):
         """
-        Obtener estadísticas del perfil
+        Obtener estadisticas del perfil
         
         Args:
             user: Usuario a analizar
             
         Returns:
-            dict: Estadísticas del perfil
-        """
+            dict: Estadisticas del perfil
         """
         return {
             'completion_percentage': ProfileService.calculate_profile_completion(user),

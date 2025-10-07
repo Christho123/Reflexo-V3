@@ -69,7 +69,7 @@ class UserVerificationCode(models.Model):
         self.save(update_fields=['locked_until', 'failed_attempts', 'updated_at'])
     
     @classmethod
-    def create_code(cls, user, verification_type='email_verification', target_email=None):
+    def create_code(cls, user, verification_type='email_verification', target_email=None, metadata=None):
         """Crea un nuevo código de verificación para un usuario"""
         import random
         

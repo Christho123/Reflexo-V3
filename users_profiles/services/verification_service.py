@@ -88,7 +88,7 @@ class VerificationService:
                     pass
                 elif verification_type == 'email_change':
                     # Cambiar email si es cambio de email
-                    new_email = verification.metadata.get('new_email')
+                    new_email = verification.target_email
                     if new_email:
                         user.email = new_email
                         user.save()
@@ -148,11 +148,11 @@ class VerificationService:
                 if User.objects.filter(email=new_email).exists():
                     raise ValidationError("El email ya está en uso")
                 
-                # Crear código de verificación con metadata
+                # Crear código de verificación con target_email
                 verification_code = UserVerificationCode.create_code(
                     user=user,
                     verification_type='email_change',
-                    metadata={'new_email': new_email}
+                    target_email=new_email
                 )
                 
                 # Preparar contenido del email
@@ -193,81 +193,111 @@ class VerificationService:
         full_name = f"{user.name} {user.paternal_lastname}".strip() if user.name else user.user_name
         
         if verification_type == 'email_verification':
-            subject = "Verifica tu email"
-            verification_url = f"{base_url}/verify-email?code={verification_code.code}"
+            subject = "Código de verificación - Reflexo"
             message = f"""
             Hola {full_name},
             
-            Gracias por registrarte. Para verificar tu email, haz clic en el siguiente enlace:
+            Gracias por registrarte en Reflexo. Para verificar tu email, utiliza el siguiente código:
             
-            {verification_url}
+            CÓDIGO DE VERIFICACIÓN: {verification_code.code}
             
-            Este enlace expirará en 24 horas.
+            Este código expirará en 15 minutos.
             
             Si no solicitaste esta verificación, puedes ignorar este email.
+            
+            Saludos,
+            Equipo Reflexo
             """
             
             html_message = f"""
-            <h2>Verifica tu email</h2>
-            <p>Hola {full_name},</p>
-            <p>Gracias por registrarte. Para verificar tu email, haz clic en el siguiente enlace:</p>
-            <p><a href="{verification_url}">Verificar Email</a></p>
-            <p>Este enlace expirará en 24 horas.</p>
-            <p>Si no solicitaste esta verificación, puedes ignorar este email.</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Código de verificación - Reflexo</h2>
+                <p>Hola {full_name},</p>
+                <p>Gracias por registrarte en Reflexo. Para verificar tu email, utiliza el siguiente código:</p>
+                
+                <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 5px;">
+                    <h1 style="color: #007bff; font-size: 32px; margin: 0; letter-spacing: 5px;">{verification_code.code}</h1>
+                </div>
+                
+                <p>Este código expirará en 15 minutos.</p>
+                <p>Si no solicitaste esta verificación, puedes ignorar este email.</p>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                <p style="color: #666; font-size: 12px;">Saludos,<br>Equipo Reflexo</p>
+            </div>
             """
             
         elif verification_type == 'email_change':
-            subject = "Confirma cambio de email"
-            verification_url = f"{base_url}/confirm-email-change?code={verification_code.code}"
+            subject = "Código de confirmación de cambio de email - Reflexo"
             message = f"""
             Hola {full_name},
             
             Has solicitado cambiar tu email a: {new_email}
             
-            Para confirmar este cambio, haz clic en el siguiente enlace:
+            Para confirmar este cambio, utiliza el siguiente código:
             
-            {verification_url}
+            CÓDIGO DE CONFIRMACIÓN: {verification_code.code}
             
-            Este enlace expirará en 24 horas.
+            Este código expirará en 15 minutos.
             
             Si no solicitaste este cambio, puedes ignorar este email.
+            
+            Saludos,
+            Equipo Reflexo
             """
             
             html_message = f"""
-            <h2>Confirma cambio de email</h2>
-            <p>Hola {full_name},</p>
-            <p>Has solicitado cambiar tu email a: <strong>{new_email}</strong></p>
-            <p>Para confirmar este cambio, haz clic en el siguiente enlace:</p>
-            <p><a href="{verification_url}">Confirmar Cambio</a></p>
-            <p>Este enlace expirará en 24 horas.</p>
-            <p>Si no solicitaste este cambio, puedes ignorar este email.</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Código de confirmación de cambio de email - Reflexo</h2>
+                <p>Hola {full_name},</p>
+                <p>Has solicitado cambiar tu email a: <strong>{new_email}</strong></p>
+                <p>Para confirmar este cambio, utiliza el siguiente código:</p>
+                
+                <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 5px;">
+                    <h1 style="color: #ffc107; font-size: 32px; margin: 0; letter-spacing: 5px;">{verification_code.code}</h1>
+                </div>
+                
+                <p>Este código expirará en 15 minutos.</p>
+                <p>Si no solicitaste este cambio, puedes ignorar este email.</p>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                <p style="color: #666; font-size: 12px;">Saludos,<br>Equipo Reflexo</p>
+            </div>
             """
             
         elif verification_type == 'password_change':
-            subject = "Recupera tu contraseña"
-            verification_url = f"{base_url}/reset-password?code={verification_code.code}"
+            subject = "Código de recuperación de contraseña - Reflexo"
             message = f"""
             Hola {full_name},
             
-            Has solicitado recuperar tu contraseña.
+            Has solicitado recuperar tu contraseña en Reflexo. Para crear una nueva contraseña, utiliza el siguiente código:
             
-            Para crear una nueva contraseña, haz clic en el siguiente enlace:
+            CÓDIGO DE RECUPERACIÓN: {verification_code.code}
             
-            {verification_url}
-            
-            Este enlace expirará en 1 hora.
+            Este código expirará en 15 minutos.
             
             Si no solicitaste este cambio, puedes ignorar este email.
+            
+            Saludos,
+            Equipo Reflexo
             """
             
             html_message = f"""
-            <h2>Recupera tu contraseña</h2>
-            <p>Hola {full_name},</p>
-            <p>Has solicitado recuperar tu contraseña.</p>
-            <p>Para crear una nueva contraseña, haz clic en el siguiente enlace:</p>
-            <p><a href="{verification_url}">Crear Nueva Contraseña</a></p>
-            <p>Este enlace expirará en 1 hora.</p>
-            <p>Si no solicitaste este cambio, puedes ignorar este email.</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Código de recuperación de contraseña - Reflexo</h2>
+                <p>Hola {full_name},</p>
+                <p>Has solicitado recuperar tu contraseña en Reflexo. Para crear una nueva contraseña, utiliza el siguiente código:</p>
+                
+                <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 5px;">
+                    <h1 style="color: #dc3545; font-size: 32px; margin: 0; letter-spacing: 5px;">{verification_code.code}</h1>
+                </div>
+                
+                <p>Este código expirará en 15 minutos.</p>
+                <p>Si no solicitaste este cambio, puedes ignorar este email.</p>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                <p style="color: #666; font-size: 12px;">Saludos,<br>Equipo Reflexo</p>
+            </div>
             """
         
         else:

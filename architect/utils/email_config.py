@@ -1,3 +1,6 @@
+# Configuración de email para referencia
+# NOTA: Esta configuración se ha movido directamente a settings.py
+# para evitar problemas de importación circular
 EMAIL_CONFIG = {
     'EMAIL_BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
     'EMAIL_HOST': 'smtp.gmail.com',

@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 # Importaciones de Django
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import update_last_login
+from django.utils import timezone
 
 # Importaciones locales
 from ..serializers.password import (
@@ -52,19 +53,16 @@ class PasswordResetView(APIView):
             try:
                 user = User.objects.get(email=email)
                 
-                # Crear código de verificación
-                verification_code = UserVerificationCode.create_code(
+                # Usar el servicio de verificación para enviar el email
+                from ..services.verification_service import VerificationService
+                VerificationService.send_verification_email(
                     user=user,
                     verification_type='password_change'
                 )
                 
-                # Aquí se enviaría el email con el código
-                # Por ahora solo retornamos el código en la respuesta
-                
                 return Response({
                     'message': 'Se ha enviado un código de verificación a tu email',
-                    'code': verification_code.code,  # Solo en desarrollo
-                    'expires_at': verification_code.expires_at
+                    'expires_at': timezone.now() + timezone.timedelta(minutes=15)
                 }, status=status.HTTP_200_OK)
                 
             except User.DoesNotExist:

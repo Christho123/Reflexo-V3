@@ -804,7 +804,8 @@ Todas las APIs siguen el patrón: `/api/[modulo]/[recurso]/`
 | **POST**   | `/api/profiles/password/strength/`                      | Validar Fortaleza de Contraseña   |   Requerida   |
 | **GET**    | `/api/profiles/password/history/`                       | Historial de Cambios de Contraseña|   Requerida   |
 | **GET**    | `/api/profiles/password/policy/`                        | Listar Politicas de Contraseña    |   Requerida   |
-| **POST**   | `/api/profiles/verification/code/`                      | Solicitar Verificacion de Email   |   Requerida   |
+| **POST**   | `/api/profiles/verification/email/`                     | Solicitar Verificacion de Email   |   Requerida   |
+| **POST**   | `/api/profiles/verification/email/confirm/`             | Confirmar Verificacion de Email   |   Requerida   |
 | **POST**   | `/api/profiles/verification/code/resend/`               | Reenviar Codigo de Verificacion   |   Requerida   |
 | **POST**   | `/api/profiles/verification/email/change/`              | Solicitar Cambio de Email         |   Requerida   |
 | **POST**   | `/api/profiles/verification/email/change/confirm/`      | confirmar Cambio de Email         |   Requerida   |
@@ -1194,7 +1195,7 @@ Todas las APIs siguen el patrón: `/api/[modulo]/[recurso]/`
 
 **Solicitar Verificación de Email:**
 - **Método:** POST
-- **URL:** `http://localhost:8000/api/profiles/verification/code/`
+- **URL:** `http://localhost:8000/api/profiles/verification/email/`
 - **Auth:** Bearer Token
 - **Headers:**
   ```
@@ -1212,9 +1213,32 @@ Todas las APIs siguen el patrón: `/api/[modulo]/[recurso]/`
 ```json
 {
     "message": "Código de verificación enviado exitosamente",
-    "code": "123456",
     "expires_at": "2024-01-20T15:30:00Z",
     "verification_type": "email_verification"
+}
+```
+
+---------------------------------------------------------------------------------------------------------------------------
+
+**Confirmar Verificación de Email:**
+- **Método:** POST
+- **URL:** `http://localhost:8000/api/profiles/verification/email/confirm/`
+- **Auth:** Bearer Token
+- **Headers:**
+  ```
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  Content-Type: application/json
+  ```
+- **Body (raw JSON):**
+```json
+{
+    "code": "123456"
+}
+```
+- **Respuesta Exitosa:**
+```json
+{
+    "message": "Email verificado exitosamente"
 }
 ```
 

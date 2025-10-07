@@ -19,6 +19,9 @@ from ..serializers.verification import (
     VerificationCodeResendSerializer, VerificationStatusSerializer
 )
 
+# Servicios locales
+from ..services.verification_service import VerificationService
+
 User = get_user_model()
 
 
@@ -35,22 +38,23 @@ class VerificationCodeView(APIView):
             verification_type = serializer.validated_data['verification_type']
             target_email = serializer.validated_data.get('target_email')
 
-            # Crear código de verificación
-            verification_code = UserVerificationCode.create_code(
-                user=request.user,
-                verification_type=verification_type
-            )
+            try:
+                # Usar el servicio de verificación para enviar el email
+                VerificationService.send_verification_email(
+                    user=request.user,
+                    verification_type=verification_type
+                )
 
-            # Aquí se enviaría el email con el código
-            # Por ahora solo retornamos el código en la respuesta
+                return Response({
+                    'message': 'Código de verificación enviado exitosamente',
+                    'expires_at': timezone.now() + timezone.timedelta(minutes=15),
+                    'verification_type': verification_type
+                }, status=status.HTTP_200_OK)
 
-            return Response({
-                'message': 'Código de verificación enviado exitosamente',
-                'code': verification_code.code,  # Solo en desarrollo
-                'expires_at': verification_code.expires_at,
-                'verification_type': verification_type
-            }, status=status.HTTP_200_OK)
-
+            except Exception as e:
+                return Response({
+                    'error': f'Error al enviar el código de verificación: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -68,27 +72,22 @@ class VerificationCodeResendView(APIView):
             verification_type = serializer.validated_data['verification_type']
             target_email = serializer.validated_data.get('target_email')
 
-            # Invalidar códigos anteriores
-            UserVerificationCode.objects.filter(
-                user=request.user,
-                verification_type=verification_type,
-                is_used=False
-            ).update(is_used=True)
+            try:
+                # Usar el servicio de verificación para reenviar el email
+                VerificationService.resend_verification_email(
+                    user=request.user,
+                    verification_type=verification_type
+                )
 
-            # Crear nuevo código
-            verification_code = UserVerificationCode.create_code(
-                user=request.user,
-                verification_type=verification_type
-            )
+                return Response({
+                    'message': 'Nuevo código de verificación enviado exitosamente',
+                    'expires_at': timezone.now() + timezone.timedelta(minutes=15)
+                }, status=status.HTTP_200_OK)
 
-            # Aquí se enviaría el email con el código
-            # Por ahora solo retornamos el código en la respuesta
-
-            return Response({
-                'message': 'Nuevo código de verificación enviado exitosamente',
-                'code': verification_code.code,  # Solo en desarrollo
-                'expires_at': verification_code.expires_at
-            }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    'error': f'Error al reenviar el código de verificación: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -138,22 +137,23 @@ class EmailChangeView(APIView):
         if serializer.is_valid():
             new_email = serializer.validated_data['new_email']
 
-            # Crear código de verificación para cambio de email
-            verification_code = UserVerificationCode.create_code(
-                user=request.user,
-                verification_type='email_change',
-                target_email=new_email
-            )
+            try:
+                # Usar el servicio de verificación para solicitar cambio de email
+                VerificationService.request_email_change(
+                    user=request.user,
+                    new_email=new_email
+                )
 
-            # Aquí se enviaría el email con el código
-            # Por ahora solo retornamos el código en la respuesta
+                return Response({
+                    'message': 'Se ha enviado un código de verificación a tu nuevo email',
+                    'expires_at': timezone.now() + timezone.timedelta(minutes=15),
+                    'target_email': new_email
+                }, status=status.HTTP_200_OK)
 
-            return Response({
-                'message': 'Se ha enviado un código de verificación a tu nuevo email',
-                'code': verification_code.code,  # Solo en desarrollo
-                'expires_at': verification_code.expires_at,
-                'target_email': new_email
-            }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    'error': f'Error al solicitar cambio de email: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -239,24 +239,25 @@ class EmailVerificationView(APIView):
                 if getattr(user, 'email_verified_at', None):
                     return Response({'error': 'Este email ya está verificado'},
                                     status=status.HTTP_400_BAD_REQUEST)
-                # Crear código de verificación
-                verification_code = UserVerificationCode.create_code(
+                
+                # Usar el servicio de verificación para enviar el email
+                VerificationService.send_verification_email(
                     user=user,
                     verification_type='email_verification'
                 )
 
-                # Aquí se enviaría el email con el código
-                # Por ahora solo retornamos el código en la respuesta
-
                 return Response({
                     'message': 'Código de verificación enviado exitosamente',
-                    'code': verification_code.code,  # Solo en desarrollo
-                    'expires_at': verification_code.expires_at
+                    'expires_at': timezone.now() + timezone.timedelta(minutes=15)
                 }, status=status.HTTP_200_OK)
 
             except User.DoesNotExist:
                 return Response({'error': 'No existe una cuenta con este email'},
                                 status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({
+                    'error': f'Error al enviar el código de verificación: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
