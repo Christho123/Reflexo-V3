@@ -1,0 +1,37 @@
+# Librerías principales del proyecto
+Django==5.2.5
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.0
+django-filter==23.5
+django-guardian==2.4.0
+django-cors-headers==4.3.1
+mysqlclient==2.2.0
+django-xhtml2pdf==0.0.3
+xhtml2pdf==0.2.11
+xlsxwriter==3.1.9
+whitenoise==6.6.0
+Pillow==10.1.0
+python-decouple==3.8
+
+# Dependencias implícitas de Django y librerías usadas
+pytz==2024.2
+sqlparse==0.5.1
+asgiref==3.8.1
+
+# Dependencias de xhtml2pdf
+reportlab==3.6.13
+html5lib==1.1
+PyPDF2==3.0.1
+arabic-reshaper==3.0.0
+python-bidi==0.4.2
+
+# Dependencias opcionales pero recomendadas
+six==1.16.0
+
+# Dependencias adicionales para Docker y producción
+gunicorn==21.2.0
+psycopg2-binary==2.9.9
+redis==5.0.1
+celery==5.3.4
+django-celery-beat==2.8.0
+django-celery-results==2.5.1
