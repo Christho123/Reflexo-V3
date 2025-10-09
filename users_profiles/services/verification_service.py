@@ -143,18 +143,23 @@ class VerificationService:
             ValidationError: Si el email ya está en uso o hay otros errores
         """
         try:
-            with transaction.atomic():
-                # Verificar que el nuevo email no esté en uso
-                if User.objects.filter(email=new_email).exists():
-                    raise ValidationError("El email ya está en uso")
-                
-                # Crear código de verificación con target_email
-                verification_code = UserVerificationCode.create_code(
-                    user=user,
-                    verification_type='email_change',
-                    target_email=new_email
-                )
-                
+            # Verificar que el nuevo email no esté en uso
+            if User.objects.filter(email=new_email).exists():
+                raise ValidationError("El email ya está en uso")
+            
+            # Crear código de verificación con target_email (fuera de la transacción)
+            verification_code = UserVerificationCode.create_code(
+                user=user,
+                verification_type='email_change',
+                target_email=new_email
+            )
+            
+            # Verificar que el código se creó correctamente
+            if not verification_code.target_email:
+                raise ValidationError("Error al crear el código de verificación")
+            
+            # Intentar enviar el email (sin transacción para que no revierta el código)
+            try:
                 # Preparar contenido del email
                 subject, message, html_message = VerificationService._prepare_email_content(
                     user, verification_code, 'email_change', new_email
@@ -170,7 +175,13 @@ class VerificationService:
                     fail_silently=False
                 )
                 
-                return True
+                print(f"✅ Email enviado exitosamente a {new_email}")
+                
+            except Exception as email_error:
+                print(f"⚠️ Error al enviar email: {str(email_error)}")
+                # No lanzar excepción aquí, el código ya se creó
+                
+            return True
                 
         except Exception as e:
             raise ValidationError(f"Error al solicitar cambio de email: {str(e)}")

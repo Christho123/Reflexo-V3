@@ -12,6 +12,14 @@ from .views.contraceptive_method import (
     contraceptive_method_detail,
 )
 
+from .views.diu_type import (
+    diu_type_list,
+    diu_type_create,
+    diu_type_edit,
+    diu_type_delete,
+    diu_type_detail,
+)
+
 urlpatterns = [
     # Rutas de histories
     path("histories/", histories_list, name="histories_list"),
@@ -47,4 +55,10 @@ urlpatterns = [
     path("contraceptive_methods/<int:pk>/edit/", contraceptive_method_edit, name="contraceptive_method_edit"),
     path("contraceptive_methods/<int:pk>/delete/", contraceptive_method_delete, name="contraceptive_method_delete"),
     path("contraceptive_methods/<int:pk>/", contraceptive_method_detail, name="contraceptive_method_detail"),
+
+    path("diu_type/", diu_type_list, name="diu_type_list"),
+    path("diu_type/create/", diu_type_create, name="diu_type_create"),
+    path("diu_type/<int:pk>/edit/", diu_type_edit, name="diu_type_edit"),
+    path("diu_type/<int:pk>/delete/", diu_type_delete, name="diu_type_delete"),
+    path("diu_type/<int:pk>/", diu_type_detail, name="diu_type_detail"),
 ]

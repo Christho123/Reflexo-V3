@@ -10,7 +10,7 @@ def histories_list(request):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])
     
-    qs = History.objects.filter(deleted_at__isnull=True).select_related("patient", "contraceptive_method")
+    qs = History.objects.filter(deleted_at__isnull=True).select_related("patient", "contraceptive_method", "diu_type")
     data = []
     for h in qs:
         data.append({
@@ -35,7 +35,10 @@ def histories_list(request):
             "last_weight": float(h.last_weight) if h.last_weight else None,
             "actual_weight": h.actual_weight,
             "menstruation": h.menstruation,
-            "diu_type": h.diu_type,
+            "diu_type": (
+                {"id": h.diu_type_id, "name": h.diu_type.name}
+                if h.diu_type else None
+            ),
             "gestation": h.gestation,
             "contraceptive_method": (
                 {"id": h.contraceptive_method_id, "name": h.contraceptive_method.name}
@@ -62,6 +65,7 @@ def history_create(request):
     patient_id = payload.get("patient")
     history_date = payload.get("history_date")
     contraceptive_method_id = payload.get("contraceptive_method")
+    diu_type_id = payload.get("diu_type")
 
     # Validar campos obligatorios
     if patient_id is None or history_date is None:
@@ -94,7 +98,7 @@ def history_create(request):
             'last_weight': payload.get('last_weight'),
             'actual_weight': payload.get('actual_weight'),
             'menstruation': payload.get('menstruation', True),
-            'diu_type': payload.get('diu_type'),
+            'diu_type_id': diu_type_id,
             'gestation': payload.get('gestation', True),
             'contraceptive_method_id': contraceptive_method_id,
         }
@@ -129,7 +133,10 @@ def history_create(request):
                 "last_weight": float(h.last_weight) if h.last_weight else None,
                 "actual_weight": h.actual_weight,
                 "menstruation": h.menstruation,
-                "diu_type": h.diu_type,
+                "diu_type": (
+                    {"id": h.diu_type_id, "name": h.diu_type.name}
+                    if h.diu_type else None
+                ),
                 "gestation": h.gestation,
                 "contraceptive_method": (
                     {"id": h.contraceptive_method_id, "name": h.contraceptive_method.name}
@@ -175,7 +182,7 @@ def history_update(request, pk):
         'last_weight': 'last_weight',
         'actual_weight': 'actual_weight',
         'menstruation': 'menstruation',
-        'diu_type': 'diu_type',
+        'diu_type': 'diu_type_id',
         'gestation': 'gestation',
         'patient': 'patient_id',  # Si se permite cambiar el paciente
         'history_date': 'history_date',  # Fecha del historial
@@ -237,7 +244,10 @@ def history_update(request, pk):
                 "last_weight": float(history.last_weight) if history.last_weight else None,
                 "actual_weight": history.actual_weight,
                 "menstruation": history.menstruation,
-                "diu_type": history.diu_type,
+                "diu_type": (
+                    {"id": history.diu_type_id, "name": history.diu_type.name}
+                    if history.diu_type else None
+                ),
                 "gestation": history.gestation,
                 "contraceptive_method": (
                     {"id": history.contraceptive_method_id, "name": history.contraceptive_method.name}
@@ -276,7 +286,7 @@ def history_detail(request, pk):
         return HttpResponseNotAllowed(["GET"])
     
     try:
-        history = History.objects.filter(deleted_at__isnull=True).select_related("patient", "contraceptive_method").get(pk=pk)
+        history = History.objects.filter(deleted_at__isnull=True).select_related("patient", "contraceptive_method", "diu_type").get(pk=pk)
         data = {
             "id": history.id,
             "patient": {
@@ -299,7 +309,10 @@ def history_detail(request, pk):
             "last_weight": float(history.last_weight) if history.last_weight else None,
             "actual_weight": history.actual_weight,
             "menstruation": history.menstruation,
-            "diu_type": history.diu_type,
+            "diu_type": (
+                {"id": history.diu_type_id, "name": history.diu_type.name}
+                if history.diu_type else None
+            ),
             "gestation": history.gestation,
             "contraceptive_method": (
                 {"id": history.contraceptive_method_id, "name": history.contraceptive_method.name}
@@ -352,7 +365,10 @@ def patient_history(request, patient_id):
             "last_weight": float(history.last_weight) if history.last_weight else None,
             "actual_weight": history.actual_weight,
             "menstruation": history.menstruation,
-            "diu_type": history.diu_type,
+            "diu_type": (
+                {"id": history.diu_type_id, "name": history.diu_type.name}
+                if history.diu_type else None
+            ),
             "gestation": history.gestation,
             "contraceptive_method": (
                 {"id": history.contraceptive_method_id, "name": history.contraceptive_method.name}

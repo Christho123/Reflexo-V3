@@ -42,7 +42,7 @@ class UserVerificationCode(models.Model):
         verbose_name = 'Código de verificación de usuario'
         verbose_name_plural = 'Códigos de verificación de usuarios'
         ordering = ['-created_at']
-        unique_together = [['user', 'verification_type']]
+        # Removido unique_together para permitir múltiples códigos por usuario/tipo
 
     def __str__(self):
         username = getattr(self.user, "user_name", getattr(self.user, "email", str(self.user_id)))
@@ -73,27 +73,38 @@ class UserVerificationCode(models.Model):
         """Crea un nuevo código de verificación para un usuario"""
         import random
         
+        # DEBUG: Imprimir parámetros recibidos
+        print(f"DEBUG create_code: user={user}, verification_type={verification_type}, target_email={target_email}")
+        
         # Generar código de 6 dígitos
         code = str(random.randint(100000, 999999))
         
         # Calcular expiración (15 minutos)
         expires_at = timezone.now() + timedelta(minutes=15)
         
-        # Usar update_or_create para evitar conflictos de integridad
-        verification_code, created = cls.objects.update_or_create(
+        # Marcar códigos anteriores del mismo tipo como usados
+        cls.objects.filter(
             user=user,
             verification_type=verification_type,
-            defaults={
-                'code': code,
-                'target_email': target_email,
-                'expires_at': expires_at,
-                'failed_attempts': 0,
-                'locked_until': None,
-                'is_used': False,
-                'created_at': timezone.now(),
-                'updated_at': timezone.now(),
-            }
+            is_used=False
+        ).update(is_used=True)
+        
+        # Crear nuevo código
+        verification_code = cls.objects.create(
+            user=user,
+            verification_type=verification_type,
+            code=code,
+            target_email=target_email,
+            expires_at=expires_at,
+            failed_attempts=0,
+            locked_until=None,
+            is_used=False,
+            created_at=timezone.now(),
+            updated_at=timezone.now(),
         )
+        
+        # DEBUG: Verificar lo que se guardó
+        print(f"DEBUG create_code: Código creado {code}, target_email guardado: '{verification_code.target_email}'")
         
         return verification_code
     

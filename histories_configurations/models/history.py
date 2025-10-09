@@ -24,7 +24,13 @@ class History(models.Model):
     
     # Información específica
     menstruation = models.BooleanField(default=True, verbose_name="Menstruación")
-    diu_type = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de DIU")
+    diu_type = models.ForeignKey(
+        'histories_configurations.DIUType',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Tipo de dispositivo intrauterino",
+    )
     gestation = models.BooleanField(default=True, verbose_name="Gestación")
 
     # Método anticonceptivo (opcional)
