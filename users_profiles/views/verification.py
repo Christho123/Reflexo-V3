@@ -74,10 +74,16 @@ class VerificationCodeResendView(APIView):
 
             try:
                 # Usar el servicio de verificación para reenviar el email
-                VerificationService.resend_verification_email(
-                    user=request.user,
-                    verification_type=verification_type
-                )
+                if verification_type == 'email_change' and target_email:
+                    VerificationService.request_email_change(
+                        user=request.user,
+                        new_email=target_email
+                    )
+                else:
+                    VerificationService.resend_verification_email(
+                        user=request.user,
+                        verification_type=verification_type
+                    )
 
                 return Response({
                     'message': 'Nuevo código de verificación enviado exitosamente',
