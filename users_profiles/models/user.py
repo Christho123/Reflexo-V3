@@ -131,8 +131,7 @@ class User(AbstractUser):
         verbose_name="Token de recordatorio"
     )
     
-    # NO sobrescribir el campo password de AbstractUser
-    #password = models.CharField(max_length=255, null=True, blank=True, verbose_name="Contraseña")
+    password = models.CharField(max_length=255, null=True, blank=True, verbose_name="Contraseña")
     
     # Campos de auditoría
     created_at = models.DateTimeField(
