@@ -25,6 +25,7 @@ class TherapistService:
             models.Q(last_name_maternal__icontains=query) |
             models.Q(document_number__icontains=query) |
             models.Q(email__icontains=query),
+            models.Q(license_number__icontains=query),
             deleted_at__isnull=True
         )
     

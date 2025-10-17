@@ -1,4 +1,6 @@
 from django.http import JsonResponse, HttpResponse
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from company_reports.services.reports_services import ReportService
 from company_reports.serialiazers.reports_serializers import (
     DateParameterSerializer,
@@ -518,6 +520,152 @@ class ExcelExportView:
         )
         response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
+
+
+# ===========================
+#   Vistas con Autenticación JWT (igual que otros módulos)
+# ===========================
+class ReportsAPIView(APIView):
+    """Vista para reportes JSON con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ReportAPIView.get_number_appointments_per_therapist(request)
+    
+    def post(self, request):
+        return ReportAPIView.get_number_appointments_per_therapist(request)
+
+class PatientsByTherapistAPIView(APIView):
+    """Vista para pacientes por terapeuta con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ReportAPIView.get_patients_by_therapist(request)
+    
+    def post(self, request):
+        return ReportAPIView.get_patients_by_therapist(request)
+
+class DailyCashAPIView(APIView):
+    """Vista para caja diaria con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ReportAPIView.get_daily_cash(request)
+    
+    def post(self, request):
+        return ReportAPIView.get_daily_cash(request)
+
+class ImprovedDailyCashAPIView(APIView):
+    """Vista para caja chica mejorada con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ReportAPIView.get_improved_daily_cash(request)
+    
+    def post(self, request):
+        return ReportAPIView.get_improved_daily_cash(request)
+
+class DailyPaidTicketsAPIView(APIView):
+    """Vista para tickets pagados con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ReportAPIView.get_daily_paid_tickets(request)
+    
+    def post(self, request):
+        return ReportAPIView.get_daily_paid_tickets(request)
+
+class AppointmentsBetweenDatesAPIView(APIView):
+    """Vista para citas entre fechas con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ReportAPIView.get_appointments_between_dates(request)
+    
+    def post(self, request):
+        return ReportAPIView.get_appointments_between_dates(request)
+
+# Vistas para Exportaciones PDF con Autenticación
+class PDFCitasTerapeutaAPIView(APIView):
+    """Vista para exportar PDF de citas por terapeuta con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return PDFExportView.pdf_citas_terapeuta(request)
+    
+    def post(self, request):
+        return PDFExportView.pdf_citas_terapeuta(request)
+
+class PDFPacientesTerapeutaAPIView(APIView):
+    """Vista para exportar PDF de pacientes por terapeuta con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return PDFExportView.pdf_pacientes_terapeuta(request)
+    
+    def post(self, request):
+        return PDFExportView.pdf_pacientes_terapeuta(request)
+
+class PDFResumenCajaAPIView(APIView):
+    """Vista para exportar PDF de resumen de caja con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return PDFExportView.pdf_resumen_caja(request)
+    
+    def post(self, request):
+        return PDFExportView.pdf_resumen_caja(request)
+
+class PDFCajaChicaMejoradaAPIView(APIView):
+    """Vista para exportar PDF de caja chica mejorada con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return PDFExportView.pdf_caja_chica_mejorada(request)
+    
+    def post(self, request):
+        return PDFExportView.pdf_caja_chica_mejorada(request)
+
+class PDFTicketsPagadosAPIView(APIView):
+    """Vista para exportar PDF de tickets pagados con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return PDFExportView.pdf_tickets_pagados(request)
+    
+    def post(self, request):
+        return PDFExportView.pdf_tickets_pagados(request)
+
+# Vistas para Exportaciones Excel con Autenticación
+class ExcelCitasAPIView(APIView):
+    """Vista para exportar Excel de citas con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ExcelExportView.exportar_excel_citas(request)
+    
+    def post(self, request):
+        return ExcelExportView.exportar_excel_citas(request)
+
+class ExcelCajaChicaMejoradaAPIView(APIView):
+    """Vista para exportar Excel de caja chica mejorada con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ExcelExportView.exportar_excel_caja_chica_mejorada(request)
+    
+    def post(self, request):
+        return ExcelExportView.exportar_excel_caja_chica_mejorada(request)
+
+class ExcelTicketsPagadosAPIView(APIView):
+    """Vista para exportar Excel de tickets pagados con autenticación JWT"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        return ExcelExportView.exportar_excel_tickets_pagados(request)
+    
+    def post(self, request):
+        return ExcelExportView.exportar_excel_tickets_pagados(request)
 
 
 # ===========================
