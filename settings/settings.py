@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Reflexo-V3',
         'USER': 'root',
-        'PASSWORD': '123456',
+        'PASSWORD': 'Reflexo159//',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
