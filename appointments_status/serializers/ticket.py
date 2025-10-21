@@ -63,9 +63,9 @@ class TicketSerializer(serializers.ModelSerializer):
     
     def validate_amount(self, value):
         """Validación personalizada para el monto"""
-        if value <= 0:
+        if value < 0:
             raise serializers.ValidationError(
-                "El monto debe ser mayor a cero."
+                "El monto no puedee ser negativo."
             )
         return value
     
@@ -81,10 +81,10 @@ class TicketSerializer(serializers.ModelSerializer):
         status = data.get('status')
         amount = data.get('amount')
         
-        # Si el ticket está marcado como pagado, debe tener un monto
-        if status == 'paid' and (not amount or amount <= 0):
+        # Si el ticket está marcado como pagado, debe tener un monto válido (puede ser 0)
+        if status == 'paid' and (amount is None or amount < 0):
             raise serializers.ValidationError(
-                "Un ticket pagado debe tener un monto válido."
+                "Un ticket pagado debe tener un monto válido (no puede ser negativo)."
             )
         
         return data
