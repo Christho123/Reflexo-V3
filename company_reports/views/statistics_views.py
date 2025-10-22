@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from datetime import datetime
+from django.utils import timezone
 from company_reports.services.statistics_services import StatisticsService
 from company_reports.serialiazers.statistics_serializers import StatisticsResource
 from django.shortcuts import render
@@ -20,8 +21,12 @@ class GetMetricsView(APIView):
 
         # Validar formato de fechas
         try:
-            start_date = datetime.strptime(start, '%Y-%m-%d').date()
-            end_date = datetime.strptime(end, '%Y-%m-%d').date()
+            start_date = datetime.strptime(start, '%Y-%m-%d')
+            end_date = datetime.strptime(end, '%Y-%m-%d')
+            
+            # Convertir a timezone-aware datetime
+            start_date = timezone.make_aware(start_date)
+            end_date = timezone.make_aware(end_date.replace(hour=23, minute=59, second=59))
             
             if start_date > end_date:
                 return Response(

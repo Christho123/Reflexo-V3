@@ -20,7 +20,6 @@ services:
 
   web:
     build: .
-    command: ["/bin/sh", "/app/entrypoint.sh"]
     env_file:
       - .env
     ports:

@@ -1,5 +1,6 @@
 from django.db.models import Count, Sum, Avg, Q, Case, When, F, Value
 from django.db.models.functions import ExtractWeekDay, Concat
+from django.utils import timezone
 from appointments_status.models.appointment import Appointment
 
 class StatisticsService:
@@ -142,8 +143,8 @@ class StatisticsService:
         return Appointment.objects.filter(
             appointment_date__range=[start, end]
         ).aggregate(
-            c=Count("id", filter=Q(appointment_status__iexact="C")),
-            cc=Count("id", filter=Q(appointment_status__iexact="CC"))
+            c=Count("id", filter=Q(appointment_status__name__iexact="C")),
+            cc=Count("id", filter=Q(appointment_status__name__iexact="CC"))
         )
 
     def get_statistics(self, start, end):

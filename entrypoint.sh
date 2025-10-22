@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
-# Esperar a que la base de datos acepte conexiones TCP (máx ~120s)
+# Esperar a que la base de datos acepte conexiones TCP (max ~120s)
 python - << 'PY'
 import os, socket, time
 host = os.getenv('DB_HOST', 'db')
@@ -23,5 +23,3 @@ python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
 exec gunicorn settings.wsgi:application --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-3} --timeout ${GUNICORN_TIMEOUT:-120}
-
-
