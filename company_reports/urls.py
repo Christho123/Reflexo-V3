@@ -2,7 +2,6 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from company_reports.views.statistics_views import StatisticsViewSet, dashboard_view, GetMetricsView
 from company_reports.views.company_views import CompanyDataViewSet
-#from company_reports.views.emails_views import dashboard_email, SendVerifyCodeAPIView, VerifyCodeAPIView
 from company_reports.views import reports_views as views
 from django.conf.urls.static import static
 from django.conf import settings
@@ -14,8 +13,6 @@ router.register(r'company', CompanyDataViewSet, basename='company')
 # Agrupar rutas por funcionalidad
 api_urlpatterns = [
     path('', include(router.urls)),
-    #path('api/send-email/', SendVerifyCodeAPIView.as_view(), name='send-email'),
-    #path('api/verify-code/', VerifyCodeAPIView.as_view(), name='verify-code'),
 ]
 
 reports_urlpatterns = [
