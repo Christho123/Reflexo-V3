@@ -6,6 +6,8 @@ from ubi_geo.models import Region, Province, District
 from ubi_geo.serializers import RegionSerializer, ProvinceSerializer, DistrictSerializer
 from histories_configurations.models import DocumentType
 from histories_configurations.serializers import DocumentTypeSerializer
+from architect.models import Role
+from architect.serializers import RoleSerializer
 
 class TherapistSerializer(serializers.ModelSerializer):
     # Serializadores anidados para mostrar datos completos

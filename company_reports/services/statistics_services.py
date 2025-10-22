@@ -38,7 +38,7 @@ class StatisticsService:
                     Value(' '),
                     'therapist__last_name_maternal', 
                     Value(', '),
-                    'therapist__name'
+                    'therapist__first_name'
                 ),
                 sesiones=Count("id"),
                 ingresos=Sum("payment")
@@ -85,14 +85,13 @@ class StatisticsService:
 
     def get_ingresos_por_dia_semana(self, start, end):
         
-        dias_semana = {
-            1: "Domingo",       
-            2: "Lunes",      
-            3: "Martes",     
-            4: "Miercoles",   
-            5: "Jueves",    
-            6: "Viernes",      
-            7: "Sabado"     
+        dias_semana = {      
+            1: "Lunes",      
+            2: "Martes",     
+            3: "Miercoles",   
+            4: "Jueves",    
+            5: "Viernes",      
+            6: "Sabado"     
         }
         
         ingresos_raw = (
@@ -101,6 +100,7 @@ class StatisticsService:
                 appointment_date__range=[start, end]
             )
             .annotate(dia_semana=ExtractWeekDay("appointment_date"))
+            .filter(dia_semana__lte=6)  # Excluir domingo (día 7)
             .values("dia_semana")
             .annotate(total=Sum("payment"))  
             .order_by("dia_semana")
@@ -116,8 +116,8 @@ class StatisticsService:
 
     def get_sesiones_por_dia_semana(self, start, end):
         dias_semana = {
-            1: "Domingo", 2: "Lunes", 3: "Martes", 4: "Miercoles",
-            5: "Jueves", 6: "Viernes", 7: "Sabado"
+            1: "Lunes", 2: "Martes", 3: "Miercoles",
+            4: "Jueves", 5: "Viernes", 6: "Sabado"
         }
         
         sesiones_raw = (
@@ -126,6 +126,7 @@ class StatisticsService:
                 appointment_date__range=[start, end]
             )
             .annotate(dia_semana=ExtractWeekDay("appointment_date"))
+            .filter(dia_semana__lte=6)  # Excluir domingo (día 7)
             .values("dia_semana")
             .annotate(sesiones=Count("id"))
             .order_by("dia_semana")
@@ -142,8 +143,8 @@ class StatisticsService:
         return Appointment.objects.filter(
             appointment_date__range=[start, end]
         ).aggregate(
-            c=Count("id", filter=Q(appointment_status__iexact="C")),
-            cc=Count("id", filter=Q(appointment_status__iexact="CC"))
+            c=Count("id", filter=Q(appointment_status__name__iexact="C")),
+            cc=Count("id", filter=Q(appointment_status__name__iexact="CC"))
         )
 
     def get_statistics(self, start, end):
