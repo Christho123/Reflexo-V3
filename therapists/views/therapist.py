@@ -28,6 +28,7 @@ class TherapistViewSet(viewsets.ModelViewSet):
         "first_name",
         "last_name_paternal",
         "last_name_maternal",
+        "license_number",
         "document_number",
         "document_type__name",
         "email",

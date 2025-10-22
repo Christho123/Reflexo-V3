@@ -55,6 +55,7 @@ class TherapistSerializer(serializers.ModelSerializer):
             'document_type',
             'document_type_name',
             'document_number',
+            'license_number',
             'last_name_paternal',
             'last_name_maternal',
             'first_name',
