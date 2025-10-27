@@ -160,7 +160,6 @@ cython_debug/
 
 # Django migrations (exclude all migrations)
 */migrations/*.py
-!*/migrations/__init__.py
 
 # Media files (optional - uncomment if you don't want to track media files)
 # media/

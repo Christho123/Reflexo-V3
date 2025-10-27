@@ -45,14 +45,15 @@ class UserSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     """Serializer para actualización de datos básicos del usuario.
     
-    Permite actualizar nombre, apellido y teléfono.
+    Permite actualizar nombre, apellido, teléfono, sexo y otros datos del perfil.
     No incluye campos sensibles como email o username.
     """
     
     class Meta:
         model = User
         fields = [
-            'name', 'paternal_lastname', 'maternal_lastname', 'phone'
+            'name', 'paternal_lastname', 'maternal_lastname', 'phone', 
+            'sex', 'document_number', 'document_type', 'country'
         ]
     
     def validate_phone(self, value):
