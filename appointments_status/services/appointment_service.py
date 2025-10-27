@@ -40,6 +40,19 @@ class AppointmentService:
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
+            # Si no se proporciona un estado de cita, establecer "Pendiente" por defecto
+            if 'appointment_status' not in data or data['appointment_status'] is None:
+                from ..models import AppointmentStatus
+                try:
+                    # Intentar obtener el estado "Pendiente"
+                    pending_status = AppointmentStatus.objects.get(name="Pendiente")
+                    data['appointment_status'] = pending_status.id
+                except AppointmentStatus.DoesNotExist:
+                    return Response(
+                        {'error': 'No se encontró el estado "Pendiente". Por favor, créelo primero.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
             # Usar el serializer para crear la cita (maneja correctamente las relaciones)
             serializer = AppointmentSerializer(data=data)
             if serializer.is_valid():
@@ -49,10 +62,16 @@ class AppointmentService:
                 # Verificar que se creó correctamente
                 try:
                     ticket = Ticket.objects.get(appointment=appointment)
+                    
+                    # Refrescar la cita desde la BD para obtener el ticket_number actualizado
+                    appointment.refresh_from_db()
+                    
+                    # Serializar nuevamente con los datos actualizados
+                    updated_serializer = AppointmentSerializer(appointment)
+                    
                     return Response({
                         'message': 'Cita creada exitosamente con ticket automático',
-                        'appointment': serializer.data,
-                        'ticket_number': ticket.ticket_number
+                        'appointment': updated_serializer.data
                     }, status=status.HTTP_201_CREATED)
                 except Ticket.DoesNotExist:
                     return Response(
