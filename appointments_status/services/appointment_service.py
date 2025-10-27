@@ -218,17 +218,20 @@ class AppointmentService:
                 if 'therapist' in filters:
                     queryset = queryset.filter(therapist=filters['therapist'])
             
+            # Calcular el total ANTES de paginar
+            total = queryset.count()
+            
             # Aplicar paginación básica
             if pagination:
                 page = pagination.get('page', 1)
                 page_size = pagination.get('page_size', 10)
                 start = (page - 1) * page_size
                 end = start + page_size
-                queryset = queryset[start:end]
+                queryset = queryset.order_by('-appointment_date', '-hour')[start:end]
             
             serializer = AppointmentSerializer(queryset, many=True)
             return Response({
-                'count': queryset.count(),
+                'count': total,
                 'results': serializer.data
             }, status=status.HTTP_200_OK)
             
