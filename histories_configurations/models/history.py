@@ -18,7 +18,6 @@ class History(models.Model):
     private_observation = models.TextField(blank=True, null=True, verbose_name="Observación privada")
     observation = models.TextField(blank=True, null=True, verbose_name="Observación")
     height = models.DecimalField(max_digits=7, decimal_places=3, blank=True, null=True, verbose_name="Altura")
-    weight = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True, verbose_name="Peso")
     initial_weight = models.CharField(max_length=255, blank=True, null=True, verbose_name="Peso Inicial")
     last_weight = models.DecimalField(max_digits=6, decimal_places=3, blank=True, null=True, verbose_name="Último peso")
     actual_weight = models.CharField(max_length=255, blank=True, null=True, verbose_name="Peso actual")

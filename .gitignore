@@ -159,7 +159,7 @@ cython_debug/
 #  .idea/
 
 # Django migrations (exclude all migrations)
-*/migrations/*.py
+*/migrations/[0-9]*.py
 
 # Media files (optional - uncomment if you don't want to track media files)
 # media/

@@ -22,7 +22,7 @@ class DocumentTypeAdmin(admin.ModelAdmin):
 
 @admin.register(History)
 class HistoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'patient', 'testimony', 'height', 'weight', 'created_at')
+    list_display = ('id', 'patient', 'testimony', 'height', 'created_at')
     list_filter = ('testimony', 'created_at', 'deleted_at')
     search_fields = ('patient__name', 'patient__document_number')
     readonly_fields = ('created_at', 'updated_at', 'deleted_at')

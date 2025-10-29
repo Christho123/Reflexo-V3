@@ -27,7 +27,7 @@ class HistorySerializer(serializers.ModelSerializer):
         model = History
         fields = [
             'id', 'patient', 'patient_id', 'testimony', 'private_observation', 
-            'observation', 'height', 'weight', 'last_weight', 'menstruation', 
+            'observation', 'height', 'last_weight', 'menstruation', 
             'diu_type', 'gestation', 'created_at', 'updated_at', 'deleted_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'deleted_at']

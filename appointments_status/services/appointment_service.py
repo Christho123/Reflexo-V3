@@ -8,7 +8,7 @@ except Exception:  # Python <3.9 fallback no esperado en este entorno
     ZoneInfo = None
 from rest_framework import status
 from rest_framework.response import Response
-from ..models import Appointment, Ticket
+from ..models import Appointment, Ticket, AppointmentStatus
 from ..serializers import AppointmentSerializer
 from decimal import Decimal
 
@@ -130,6 +130,17 @@ class AppointmentService:
         try:
             appointment = Appointment.objects.get(id=appointment_id, deleted_at__isnull=True)
             
+            # Verificar si se está asignando un terapeuta y si antes no lo tenía
+            if 'therapist' in data and data['therapist'] is not None and appointment.therapist is None:
+                try:
+                    completed_status = AppointmentStatus.objects.get(name="Completado")
+                    data['appointment_status'] = completed_status.id
+                except AppointmentStatus.DoesNotExist:
+                    return Response(
+                        {'error': 'No se encontró el estado "Completado". Por favor, créelo primero.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
             # Usar el serializer para actualizar (maneja correctamente las relaciones)
             serializer = AppointmentSerializer(appointment, data=data, partial=True)
             if serializer.is_valid():

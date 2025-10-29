@@ -31,7 +31,6 @@ def histories_list(request):
             "private_observation": h.private_observation,
             "observation": h.observation,
             "height": float(h.height) if h.height else None,
-            "weight": float(h.weight) if h.weight else None,
             "initial_weight": h.initial_weight,
             "last_weight": float(h.last_weight) if h.last_weight else None,
             "actual_weight": h.actual_weight,
@@ -95,7 +94,6 @@ def history_create(request):
             'private_observation': payload.get('private_observation'),
             'observation': payload.get('observation'),
             'height': payload.get('height'),
-            'weight': payload.get('weight'),
             'initial_weight': payload.get('initial_weight'),
             'last_weight': payload.get('last_weight'),
             'actual_weight': payload.get('actual_weight'),
@@ -131,7 +129,6 @@ def history_create(request):
                 "private_observation": h.private_observation,
                 "observation": h.observation,
                 "height": float(h.height) if h.height else None,
-                "weight": float(h.weight) if h.weight else None,
                 "initial_weight": h.initial_weight,
                 "last_weight": float(h.last_weight) if h.last_weight else None,
                 "actual_weight": h.actual_weight,
@@ -181,7 +178,6 @@ def history_update(request, pk):
         'private_observation': 'private_observation',
         'observation': 'observation',
         'height': 'height',
-        'weight': 'weight',
         'initial_weight': 'initial_weight',
         'last_weight': 'last_weight',
         'actual_weight': 'actual_weight',
@@ -224,7 +220,7 @@ def history_update(request, pk):
                             value = value.lower() in ('true', '1', 'yes', 'si')
                     
                     # Para campos decimales, manejar valores vacíos
-                    if field_name in ['height', 'weight', 'last_weight']:
+                    if field_name in ['height', 'last_weight']:
                         if value == '' or value is None:
                             setattr(history, model_field, None)
                         else:
@@ -244,7 +240,6 @@ def history_update(request, pk):
                 "private_observation": history.private_observation,
                 "observation": history.observation,
                 "height": float(history.height) if history.height else None,
-                "weight": float(history.weight) if history.weight else None,
                 "initial_weight": history.initial_weight,
                 "last_weight": float(history.last_weight) if history.last_weight else None,
                 "actual_weight": history.actual_weight,
@@ -310,7 +305,6 @@ def history_detail(request, pk):
             "private_observation": history.private_observation,
             "observation": history.observation,
             "height": float(history.height) if history.height else None,
-            "weight": float(history.weight) if history.weight else None,
             "initial_weight": history.initial_weight,
             "last_weight": float(history.last_weight) if history.last_weight else None,
             "actual_weight": history.actual_weight,
@@ -367,7 +361,6 @@ def patient_history(request, patient_id):
             "private_observation": history.private_observation,
             "observation": history.observation,
             "height": float(history.height) if history.height else None,
-            "weight": float(history.weight) if history.weight else None,
             "initial_weight": history.initial_weight,
             "last_weight": float(history.last_weight) if history.last_weight else None,
             "actual_weight": history.actual_weight,
