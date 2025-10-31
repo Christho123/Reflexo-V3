@@ -54,8 +54,8 @@ class StatisticsService:
         total_ingresos = sum(float(s['ingresos'] or 0) for s in stats)  
         num_terapeutas = len(stats)
         
-        prom_sesiones = total_sesiones / num_terapeutas if num_terapeutas > 0 else 1
-        prom_ingresos = total_ingresos / num_terapeutas if num_terapeutas > 0 else 1
+        prom_sesiones = total_sesiones / num_terapeutas if num_terapeutas > 0 else 1.0
+        prom_ingresos = total_ingresos / num_terapeutas if num_terapeutas > 0 else 1.0
         
         # 3. Calcular rating original para cada terapeuta
         for stat in stats:
@@ -63,11 +63,18 @@ class StatisticsService:
             ingresos = float(stat['ingresos'] or 0)  
             
             # Fórmula 70% sesiones, 30% ingresos
-            rating_original = (sesiones / prom_sesiones) * 0.7 + (ingresos / prom_ingresos) * 0.3
+            rating_original = 0.0
+            if prom_sesiones > 0 and prom_ingresos > 0:
+                rating_original = (sesiones / prom_sesiones) * 0.7 + (ingresos / prom_ingresos) * 0.3
+            elif prom_sesiones > 0:
+                rating_original = (sesiones / prom_sesiones) * 0.7
+            elif prom_ingresos > 0:
+                rating_original = (ingresos / prom_ingresos) * 0.3
+                
             stat['raiting_original'] = rating_original
         
         # 4. Encontrar el máximo rating original
-        max_original = max(s['raiting_original'] for s in stats) if stats else 1
+        max_original = max(s['raiting_original'] for s in stats) if stats else 1.0
         
         # 5. Escalar a 5 puntos y formatear resultado
         resultado = []

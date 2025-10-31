@@ -178,6 +178,11 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             if value:
                 filters[field] = value
         
+        # Filtros de fecha
+        filters['date'] = request.query_params.get('date')
+        filters['start_date'] = request.query_params.get('start_date')
+        filters['end_date'] = request.query_params.get('end_date')
+        
         return self.service.get_pending_appointments(filters)
     
     @action(detail=False, methods=['get'])

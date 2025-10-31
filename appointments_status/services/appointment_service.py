@@ -320,13 +320,9 @@ class AppointmentService:
                     # Si se especifica un status, usar ese
                     queryset = queryset.filter(appointment_status=filters['appointment_status'])
                 else:
-                    # Si no se especifica, buscar por estado "Completada" o fecha anterior
+                    # Si no se especifica, buscar por estado "Completado"
                     if completed_status_id:
                         queryset = queryset.filter(appointment_status=completed_status_id)
-                    else:
-                        # Fallback: usar fecha anterior a hoy
-                        today = timezone.now().date()
-                        queryset = queryset.filter(appointment_date__lt=today)
                 
                 if 'patient' in filters and filters['patient']:
                     queryset = queryset.filter(patient=filters['patient'])
@@ -334,20 +330,20 @@ class AppointmentService:
                     queryset = queryset.filter(therapist=filters['therapist'])
 
                 # Filtro por fecha con ventana horaria (evita desfases de zona horaria)
-                tzname = getattr(settings, 'TIME_ZONE', 'UTC')
-                tz = ZoneInfo(tzname) if ZoneInfo else None
+                # tzname = getattr(settings, 'TIME_ZONE', 'UTC') # Ya no es necesario con USE_TZ=False
+                # tz = ZoneInfo(tzname) if ZoneInfo else None # Ya no es necesario con USE_TZ=False
 
                 date_str = filters.get('date')
                 if date_str:
                     base_date = datetime.fromisoformat(date_str).date()
                     start_dt = datetime.combine(base_date, dt_time.min)
                     end_dt = start_dt + timedelta(days=1)
-                    if tz:
-                        start_dt = timezone.make_aware(start_dt, tz)
-                        end_dt = timezone.make_aware(end_dt, tz)
-                    else:
-                        start_dt = timezone.make_aware(start_dt)
-                        end_dt = timezone.make_aware(end_dt)
+                    # if tz: # Ya no es necesario con USE_TZ=False
+                    #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
+                    #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
+                    # else: # Ya no es necesario con USE_TZ=False
+                    #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
+                    #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                     queryset = queryset.filter(appointment_date__gte=start_dt, appointment_date__lt=end_dt)
                 else:
                     start_date = filters.get('start_date')
@@ -357,37 +353,36 @@ class AppointmentService:
                         e_date = datetime.fromisoformat(end_date).date()
                         start_dt = datetime.combine(s_date, dt_time.min)
                         end_dt = datetime.combine(e_date + timedelta(days=1), dt_time.min)
-                        if tz:
-                            start_dt = timezone.make_aware(start_dt, tz)
-                            end_dt = timezone.make_aware(end_dt, tz)
-                        else:
-                            start_dt = timezone.make_aware(start_dt)
-                            end_dt = timezone.make_aware(end_dt)
+                        # if tz: # Ya no es necesario con USE_TZ=False
+                        #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
+                        #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
+                        # else: # Ya no es necesario con USE_TZ=False
+                        #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
+                        #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__gte=start_dt, appointment_date__lt=end_dt)
                     elif start_date:
                         s_date = datetime.fromisoformat(start_date).date()
                         start_dt = datetime.combine(s_date, dt_time.min)
-                        if tz:
-                            start_dt = timezone.make_aware(start_dt, tz)
-                        else:
-                            start_dt = timezone.make_aware(start_dt)
+                        # if tz: # Ya no es necesario con USE_TZ=False
+                        #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
+                        # else: # Ya no es necesario con USE_TZ=False
+                        #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__gte=start_dt)
                     elif end_date:
                         e_date = datetime.fromisoformat(end_date).date()
                         end_dt = datetime.combine(e_date + timedelta(days=1), dt_time.min)
-                        if tz:
-                            end_dt = timezone.make_aware(end_dt, tz)
-                        else:
-                            end_dt = timezone.make_aware(end_dt)
+                        # if tz: # Ya no es necesario con USE_TZ=False
+                        #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
+                        # else: # Ya no es necesario con USE_TZ=False
+                        #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__lt=end_dt)
             else:
-                # Sin filtros: buscar por estado "Completada" o fecha anterior
+                # Sin filtros: buscar por estado "Completada"
                 if completed_status_id:
                     queryset = queryset.filter(appointment_status=completed_status_id)
                 else:
-                    # Fallback: usar fecha anterior a hoy
-                    today = timezone.now().date()
-                    queryset = queryset.filter(appointment_date__lt=today)
+                    # Si no se encuentra el ID de estado, no retornar nada (evitar fallback a fecha)
+                    queryset = queryset.none()
             
             total = queryset.count()
 
@@ -437,26 +432,69 @@ class AppointmentService:
                     # Si se especifica un status, usar ese
                     queryset = queryset.filter(appointment_status=filters['appointment_status'])
                 else:
-                    # Si no se especifica, buscar por estado "Pendiente" o fecha >= hoy
+                    # Si no se especifica, buscar por estado "Pendiente"
                     if pending_status_id:
                         queryset = queryset.filter(appointment_status=pending_status_id)
-                    else:
-                        # Fallback: usar fecha >= hoy
-                        today = timezone.now().date()
-                        queryset = queryset.filter(appointment_date__gte=today)
                 
                 if 'patient' in filters:
                     queryset = queryset.filter(patient=filters['patient'])
                 if 'therapist' in filters:
                     queryset = queryset.filter(therapist=filters['therapist'])
+
+                # Filtro por fecha con ventana horaria (evita desfases de zona horaria)
+                # tzname = getattr(settings, 'TIME_ZONE', 'UTC') # Ya no es necesario con USE_TZ=False
+                # tz = ZoneInfo(tzname) if ZoneInfo else None # Ya no es necesario con USE_TZ=False
+
+                date_str = filters.get('date')
+                if date_str:
+                    base_date = datetime.fromisoformat(date_str).date()
+                    start_dt = datetime.combine(base_date, dt_time.min)
+                    end_dt = start_dt + timedelta(days=1)
+                    # if tz: # Ya no es necesario con USE_TZ=False
+                    #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
+                    #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
+                    # else: # Ya no es necesario con USE_TZ=False
+                    #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
+                    #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
+                    queryset = queryset.filter(appointment_date__gte=start_dt, appointment_date__lt=end_dt)
+                else:
+                    start_date = filters.get('start_date')
+                    end_date = filters.get('end_date')
+                    if start_date and end_date:
+                        s_date = datetime.fromisoformat(start_date).date()
+                        e_date = datetime.fromisoformat(end_date).date()
+                        start_dt = datetime.combine(s_date, dt_time.min)
+                        end_dt = datetime.combine(e_date + timedelta(days=1), dt_time.min)
+                        # if tz: # Ya no es necesario con USE_TZ=False
+                        #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
+                        #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
+                        # else: # Ya no es necesario con USE_TZ=False
+                        #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
+                        #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
+                        queryset = queryset.filter(appointment_date__gte=start_dt, appointment_date__lt=end_dt)
+                    elif start_date:
+                        s_date = datetime.fromisoformat(start_date).date()
+                        start_dt = datetime.combine(s_date, dt_time.min)
+                        # if tz: # Ya no es necesario con USE_TZ=False
+                        #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
+                        # else: # Ya no es necesario con USE_TZ=False
+                        #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
+                        queryset = queryset.filter(appointment_date__gte=start_dt)
+                    elif end_date:
+                        e_date = datetime.fromisoformat(end_date).date()
+                        end_dt = datetime.combine(e_date + timedelta(days=1), dt_time.min)
+                        # if tz: # Ya no es necesario con USE_TZ=False
+                        #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
+                        # else: # Ya no es necesario con USE_TZ=False
+                        #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
+                        queryset = queryset.filter(appointment_date__lt=end_dt)
             else:
-                # Sin filtros: buscar por estado "Pendiente" o fecha >= hoy
+                # Sin filtros: buscar por estado "Pendiente"
                 if pending_status_id:
                     queryset = queryset.filter(appointment_status=pending_status_id)
                 else:
-                    # Fallback: usar fecha >= hoy
-                    today = timezone.now().date()
-                    queryset = queryset.filter(appointment_date__gte=today)
+                    # Si no se encuentra el ID de estado, no retornar nada (evitar fallback a fecha)
+                    queryset = queryset.none()
             
             serializer = AppointmentSerializer(queryset, many=True)
             return Response({
