@@ -10,9 +10,9 @@ class AppointmentStatusAdmin(admin.ModelAdmin):
     Configuración del admin para AppointmentStatus.
     """
     list_display = ['name', 'description', 'appointments_count', 'created_at']
-    list_filter = ['created_at', 'updated_at', 'deleted_at']
+    list_filter = ['created_at', 'updated_at']
     search_fields = ['name', 'description']
-    readonly_fields = ['appointments_count', 'created_at', 'updated_at', 'deleted_at']
+    readonly_fields = ['appointments_count', 'created_at', 'updated_at']
     ordering = ['name']
 
     fieldsets = (
@@ -20,7 +20,7 @@ class AppointmentStatusAdmin(admin.ModelAdmin):
             'fields': ('name', 'description')
         }),
         ('Información del Sistema', {
-            'fields': ('appointments_count', 'created_at', 'updated_at', 'deleted_at'),
+            'fields': ('appointments_count', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
@@ -31,7 +31,7 @@ class TicketInline(admin.StackedInline):
     model = Ticket
     extra = 0
     autocomplete_fields = ['appointment']  # no carga listas enormes
-    readonly_fields = ['is_paid', 'is_pending', 'payment_date', 'created_at', 'updated_at', 'deleted_at']
+    readonly_fields = ['is_paid', 'is_pending', 'payment_date', 'created_at', 'updated_at']
     fieldsets = (
         ('Información del Ticket', {
             'fields': ('ticket_number', 'amount', 'payment_method', 'description')
@@ -44,7 +44,7 @@ class TicketInline(admin.StackedInline):
             'description': 'La cita se completa automáticamente al usar el inline.'
         }),
         ('Información del Sistema', {
-            'fields': ('is_paid', 'is_pending', 'payment_date', 'created_at', 'updated_at', 'deleted_at'),
+            'fields': ('is_paid', 'is_pending', 'payment_date', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
@@ -54,17 +54,16 @@ class TicketInline(admin.StackedInline):
 class AppointmentAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'appointment_date', 'hour', 'appointment_status',
-        'room', 'is_completed', 'deleted_at'
+        'room', 'is_completed'
     ]
     list_filter = [
         'appointment_date', 'appointment_status', 'room',
-        'created_at', 'deleted_at'
+        'created_at'
     ]
     search_fields = ['ailments', 'diagnosis', 'observation', 'ticket_number']
-    readonly_fields = ['is_completed', 'is_pending', 'created_at', 'updated_at', 'deleted_at']
+    readonly_fields = ['is_completed', 'is_pending', 'created_at', 'updated_at']
     ordering = ['-appointment_date', '-hour']
 
-    # 👇 según prefieras
     raw_id_fields = ['patient', 'therapist', 'history']
     # o bien
     autocomplete_fields = ['payment_status']
@@ -87,7 +86,7 @@ class AppointmentAdmin(admin.ModelAdmin):
             'description': 'Selecciona paciente, terapeuta, historial y estado de pago.'
         }),
         ('Información del Sistema', {
-            'fields': ('is_completed', 'is_pending', 'created_at', 'updated_at', 'deleted_at'),
+            'fields': ('is_completed', 'is_pending', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
@@ -108,10 +107,10 @@ class TicketAdmin(admin.ModelAdmin):
         'description', 'is_active', 'payment_date'
     ]
     list_filter = [
-        'payment_type', 'status', 'payment_date', 'created_at', 'deleted_at'
+        'payment_type', 'status', 'payment_date', 'created_at', 'is_active'
     ]
     search_fields = ['ticket_number', 'description']
-    readonly_fields = ['is_paid', 'is_pending', 'payment_date', 'created_at', 'updated_at', 'deleted_at']
+    readonly_fields = ['is_paid', 'is_pending', 'payment_date', 'created_at', 'updated_at']
     ordering = ['-payment_date']
 
     # ✅ Para no cargar todas las citas en un <select>
@@ -130,7 +129,7 @@ class TicketAdmin(admin.ModelAdmin):
             'description': 'Selecciona la cita a la que pertenece este ticket'
         }),
         ('Información del Sistema', {
-            'fields': ('is_paid', 'is_pending', 'payment_date', 'created_at', 'updated_at', 'deleted_at'),
+            'fields': ('is_paid', 'is_pending', 'payment_date', 'created_at', 'updated_at', 'is_active'),
             'classes': ('collapse',)
         }),
     )

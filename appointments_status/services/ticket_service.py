@@ -10,7 +10,6 @@ import re
 class TicketService:
     """
     Servicio para gestionar las operaciones de tickets.
-    Basado en la estructura del módulo Laravel 05_appointments_status.
     """
     
     @transaction.atomic
@@ -70,7 +69,7 @@ class TicketService:
             Response: Respuesta con el ticket o error si no existe
         """
         try:
-            ticket = Ticket.objects.get(id=ticket_id, is_active=True)
+            ticket = Ticket.objects.get(id=ticket_id)
             serializer = TicketSerializer(ticket)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Ticket.DoesNotExist:
@@ -97,7 +96,7 @@ class TicketService:
             Response: Respuesta con el ticket actualizado o error
         """
         try:
-            ticket = Ticket.objects.get(id=ticket_id, is_active=True)
+            ticket = Ticket.objects.get(id=ticket_id)
             
             # Usar el serializer para actualizar (maneja correctamente las relaciones)
             serializer = TicketSerializer(ticket, data=data, partial=True)
@@ -127,7 +126,7 @@ class TicketService:
     
     def delete(self, ticket_id):
         """
-        Elimina un ticket (soft delete).
+        Elimina un ticket de forma permanente.
         
         Args:
             ticket_id (int): ID del ticket a eliminar
@@ -136,11 +135,11 @@ class TicketService:
             Response: Respuesta de confirmación o error
         """
         try:
-            ticket = Ticket.objects.get(id=ticket_id, is_active=True)
-            ticket.soft_delete()
+            ticket = Ticket.objects.get(id=ticket_id)
+            ticket.delete()
             
             return Response({
-                'message': 'Ticket eliminado exitosamente'
+                'message': 'Ticket eliminado permanentemente'
             }, status=status.HTTP_200_OK)
             
         except Ticket.DoesNotExist:
@@ -166,7 +165,7 @@ class TicketService:
             Response: Respuesta con la lista de tickets
         """
         try:
-            queryset = Ticket.objects.filter(is_active=True)
+            queryset = Ticket.objects.all()
             
             # Aplicar filtros
             if filters:
@@ -210,7 +209,7 @@ class TicketService:
             Response: Respuesta con el ticket o error si no existe
         """
         try:
-            ticket = Ticket.objects.get(ticket_number=ticket_number, is_active=True)
+            ticket = Ticket.objects.get(ticket_number=ticket_number)
             serializer = TicketSerializer(ticket)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Ticket.DoesNotExist:
@@ -235,7 +234,7 @@ class TicketService:
             Response: Respuesta con los tickets pagados
         """
         try:
-            queryset = Ticket.objects.filter(status='paid', is_active=True)
+            queryset = Ticket.objects.filter(status='paid')
             
             # Aplicar filtros adicionales
             if filters:
@@ -269,7 +268,7 @@ class TicketService:
             Response: Respuesta con los tickets pendientes
         """
         try:
-            queryset = Ticket.objects.filter(status='pending', is_active=True)
+            queryset = Ticket.objects.filter(status='pending')
             
             # Aplicar filtros adicionales
             if filters:
@@ -304,7 +303,7 @@ class TicketService:
             Response: Respuesta de confirmación o error
         """
         try:
-            ticket = Ticket.objects.get(id=ticket_id, is_active=True)
+            ticket = Ticket.objects.get(id=ticket_id)
             ticket.mark_as_paid()
             serializer = TicketSerializer(ticket)
             
@@ -336,7 +335,7 @@ class TicketService:
             Response: Respuesta de confirmación o error
         """
         try:
-            ticket = Ticket.objects.get(id=ticket_id, is_active=True)
+            ticket = Ticket.objects.get(id=ticket_id)
             ticket.mark_as_cancelled()
             serializer = TicketSerializer(ticket)
             

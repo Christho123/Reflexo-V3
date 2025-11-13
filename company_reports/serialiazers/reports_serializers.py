@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from datetime import datetime
 from django.utils.timezone import localtime
-from django.utils import timezone
 
 
 class DateParameterSerializer(serializers.Serializer):
@@ -17,18 +16,6 @@ class DateParameterSerializer(serializers.Serializer):
             return value  # Retornar el objeto date, no string
         return localtime().date()
     
-    def validate_start_date(self, value):
-        """Valida formato de fecha para start_date y proporciona un valor por defecto."""
-        if value:
-            return value
-        return localtime().date()
-
-    def validate_end_date(self, value):
-        """Valida formato de fecha para end_date y proporciona un valor por defecto."""
-        if value:
-            return value
-        return localtime().date()
-    
     def validate(self, data):
         """Validaciones cruzadas entre fechas."""
         if 'start_date' in data and 'end_date' in data:
@@ -37,7 +24,7 @@ class DateParameterSerializer(serializers.Serializer):
         
         # Asegurar que date tenga un valor por defecto si no se proporciona
         if 'date' not in data:
-            data['date'] = timezone.now().date()
+            data['date'] = localtime().date()
             
         return data
 

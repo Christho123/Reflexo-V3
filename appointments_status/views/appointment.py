@@ -10,25 +10,19 @@ from ..services import AppointmentService
 from django.utils import timezone
 
 
-# Create your models here.
-
-
 class AppointmentViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gestionar las citas médicas.
     Basado en la estructura actualizada del modelo.
     """
     
-    queryset = Appointment.objects.filter(deleted_at__isnull=True)
+    queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = [
         'appointment_date', 
-        # 'appointment_status',  # Comentado temporalmente
         'appointment_type', 
         'room',
-        # 'patient',  # Comentado temporalmente
-        # 'therapist'  # Comentado temporalmente
     ]
     search_fields = [
         'ailments', 
@@ -57,7 +51,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         Filtra el queryset según los parámetros de la request.
         """
         try:
-            queryset = Appointment.objects.filter(deleted_at__isnull=True)
+            queryset = Appointment.objects.all()
             
             # Filtros adicionales
             appointment_date = self.request.query_params.get('appointment_date', None)
@@ -95,11 +89,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     
     def destroy(self, request, *args, **kwargs):
         """
-        Elimina una cita (soft delete).
+        Elimina una cita.
         """
         try:
-            appointment_id = kwargs.get('pk')
-            return self.service.delete(appointment_id)
+            appointment = self.get_object()
+            appointment.delete() # Hard delete
+            return Response({'message': 'Cita eliminada permanentemente'}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({
                 "error": f"Error al eliminar la cita: {str(e)}"

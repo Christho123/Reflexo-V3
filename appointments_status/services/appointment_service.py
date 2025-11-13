@@ -2,10 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.conf import settings
 from datetime import datetime, timedelta, time as dt_time
-try:
-    from zoneinfo import ZoneInfo
-except Exception:  # Python <3.9 fallback no esperado en este entorno
-    ZoneInfo = None
+
 from rest_framework import status
 from rest_framework.response import Response
 from ..models import Appointment, Ticket, AppointmentStatus
@@ -101,7 +98,7 @@ class AppointmentService:
             Response: Respuesta con la cita o error si no existe
         """
         try:
-            appointment = Appointment.objects.get(id=appointment_id, deleted_at__isnull=True)
+            appointment = Appointment.objects.get(id=appointment_id)
             serializer = AppointmentSerializer(appointment)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Appointment.DoesNotExist:
@@ -128,7 +125,7 @@ class AppointmentService:
             Response: Respuesta con la cita actualizada o error
         """
         try:
-            appointment = Appointment.objects.get(id=appointment_id, deleted_at__isnull=True)
+            appointment = Appointment.objects.get(id=appointment_id)
             
             # Verificar si se está asignando un terapeuta y si antes no lo tenía
             if 'therapist' in data and data['therapist'] is not None and appointment.therapist is None:
@@ -170,7 +167,7 @@ class AppointmentService:
     
     def delete(self, appointment_id):
         """
-        Elimina una cita (soft delete).
+        Elimina una cita de forma permanente.
         
         Args:
             appointment_id (int): ID de la cita a eliminar
@@ -179,18 +176,18 @@ class AppointmentService:
             Response: Respuesta de confirmación o error
         """
         try:
-            appointment = Appointment.objects.get(id=appointment_id, deleted_at__isnull=True)
-            appointment.soft_delete()
+            appointment = Appointment.objects.get(id=appointment_id)
+            appointment.delete()
             
-            # También desactivar el ticket asociado
+            # También eliminar el ticket asociado de forma permanente
             try:
                 ticket = Ticket.objects.get(appointment=appointment)
-                ticket.soft_delete()
+                ticket.delete() # Hard delete
             except Ticket.DoesNotExist:
                 pass  # Si no hay ticket, no hay problema
             
             return Response({
-                'message': 'Cita eliminada exitosamente'
+                'message': 'Cita eliminada permanentemente'
             }, status=status.HTTP_200_OK)
             
         except Appointment.DoesNotExist:
@@ -216,7 +213,7 @@ class AppointmentService:
             Response: Respuesta con la lista de citas
         """
         try:
-            queryset = Appointment.objects.filter(deleted_at__isnull=True)
+            queryset = Appointment.objects.all()
             
             # Aplicar filtros
             if filters:
@@ -266,8 +263,7 @@ class AppointmentService:
         """
         try:
             queryset = Appointment.objects.filter(
-                appointment_date__range=[start_date, end_date],
-                deleted_at__isnull=True
+                appointment_date__range=[start_date, end_date]
             )
             
             # Aplicar filtros adicionales
@@ -312,7 +308,7 @@ class AppointmentService:
             except AppointmentStatus.DoesNotExist:
                 completed_status_id = None
             
-            queryset = Appointment.objects.filter(deleted_at__isnull=True)
+            queryset = Appointment.objects.all()
             
             # Aplicar filtros
             if filters:
@@ -329,21 +325,11 @@ class AppointmentService:
                 if 'therapist' in filters and filters['therapist']:
                     queryset = queryset.filter(therapist=filters['therapist'])
 
-                # Filtro por fecha con ventana horaria (evita desfases de zona horaria)
-                # tzname = getattr(settings, 'TIME_ZONE', 'UTC') # Ya no es necesario con USE_TZ=False
-                # tz = ZoneInfo(tzname) if ZoneInfo else None # Ya no es necesario con USE_TZ=False
-
                 date_str = filters.get('date')
                 if date_str:
                     base_date = datetime.fromisoformat(date_str).date()
                     start_dt = datetime.combine(base_date, dt_time.min)
                     end_dt = start_dt + timedelta(days=1)
-                    # if tz: # Ya no es necesario con USE_TZ=False
-                    #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
-                    #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
-                    # else: # Ya no es necesario con USE_TZ=False
-                    #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
-                    #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                     queryset = queryset.filter(appointment_date__gte=start_dt, appointment_date__lt=end_dt)
                 else:
                     start_date = filters.get('start_date')
@@ -353,28 +339,14 @@ class AppointmentService:
                         e_date = datetime.fromisoformat(end_date).date()
                         start_dt = datetime.combine(s_date, dt_time.min)
                         end_dt = datetime.combine(e_date + timedelta(days=1), dt_time.min)
-                        # if tz: # Ya no es necesario con USE_TZ=False
-                        #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
-                        #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
-                        # else: # Ya no es necesario con USE_TZ=False
-                        #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
-                        #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__gte=start_dt, appointment_date__lt=end_dt)
                     elif start_date:
                         s_date = datetime.fromisoformat(start_date).date()
                         start_dt = datetime.combine(s_date, dt_time.min)
-                        # if tz: # Ya no es necesario con USE_TZ=False
-                        #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
-                        # else: # Ya no es necesario con USE_TZ=False
-                        #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__gte=start_dt)
                     elif end_date:
                         e_date = datetime.fromisoformat(end_date).date()
                         end_dt = datetime.combine(e_date + timedelta(days=1), dt_time.min)
-                        # if tz: # Ya no es necesario con USE_TZ=False
-                        #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
-                        # else: # Ya no es necesario con USE_TZ=False
-                        #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__lt=end_dt)
             else:
                 # Sin filtros: buscar por estado "Completada"
@@ -424,7 +396,7 @@ class AppointmentService:
             except AppointmentStatus.DoesNotExist:
                 pending_status_id = None
             
-            queryset = Appointment.objects.filter(deleted_at__isnull=True)
+            queryset = Appointment.objects.all()
             
             # Aplicar filtros
             if filters:
@@ -441,21 +413,11 @@ class AppointmentService:
                 if 'therapist' in filters:
                     queryset = queryset.filter(therapist=filters['therapist'])
 
-                # Filtro por fecha con ventana horaria (evita desfases de zona horaria)
-                # tzname = getattr(settings, 'TIME_ZONE', 'UTC') # Ya no es necesario con USE_TZ=False
-                # tz = ZoneInfo(tzname) if ZoneInfo else None # Ya no es necesario con USE_TZ=False
-
                 date_str = filters.get('date')
                 if date_str:
                     base_date = datetime.fromisoformat(date_str).date()
                     start_dt = datetime.combine(base_date, dt_time.min)
                     end_dt = start_dt + timedelta(days=1)
-                    # if tz: # Ya no es necesario con USE_TZ=False
-                    #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
-                    #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
-                    # else: # Ya no es necesario con USE_TZ=False
-                    #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
-                    #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                     queryset = queryset.filter(appointment_date__gte=start_dt, appointment_date__lt=end_dt)
                 else:
                     start_date = filters.get('start_date')
@@ -465,28 +427,14 @@ class AppointmentService:
                         e_date = datetime.fromisoformat(end_date).date()
                         start_dt = datetime.combine(s_date, dt_time.min)
                         end_dt = datetime.combine(e_date + timedelta(days=1), dt_time.min)
-                        # if tz: # Ya no es necesario con USE_TZ=False
-                        #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
-                        #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
-                        # else: # Ya no es necesario con USE_TZ=False
-                        #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
-                        #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__gte=start_dt, appointment_date__lt=end_dt)
                     elif start_date:
                         s_date = datetime.fromisoformat(start_date).date()
                         start_dt = datetime.combine(s_date, dt_time.min)
-                        # if tz: # Ya no es necesario con USE_TZ=False
-                        #     start_dt = timezone.make_aware(start_dt, tz) # Ya no es necesario con USE_TZ=False
-                        # else: # Ya no es necesario con USE_TZ=False
-                        #     start_dt = timezone.make_aware(start_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__gte=start_dt)
                     elif end_date:
                         e_date = datetime.fromisoformat(end_date).date()
                         end_dt = datetime.combine(e_date + timedelta(days=1), dt_time.min)
-                        # if tz: # Ya no es necesario con USE_TZ=False
-                        #     end_dt = timezone.make_aware(end_dt, tz) # Ya no es necesario con USE_TZ=False
-                        # else: # Ya no es necesario con USE_TZ=False
-                        #     end_dt = timezone.make_aware(end_dt) # Ya no es necesario con USE_TZ=False
                         queryset = queryset.filter(appointment_date__lt=end_dt)
             else:
                 # Sin filtros: buscar por estado "Pendiente"
@@ -528,8 +476,7 @@ class AppointmentService:
             
             # Buscar citas que se solapen
             conflicting_appointments = Appointment.objects.filter(
-                appointment_date=date,
-                deleted_at__isnull=True
+                appointment_date=date
             ).exclude(
                 hour__gte=end_datetime.time()
             ).exclude(

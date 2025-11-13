@@ -31,7 +31,7 @@ class StatisticsService:
             .filter(
                 appointment_date__range=[start, end]
             )
-            .values("therapist__id")
+            .values("therapist__id", "hour")
             .annotate(
                 # Formato de nombre  "Apellido1 Apellido2, Nombre"
                 terapeuta=Concat(
@@ -44,21 +44,42 @@ class StatisticsService:
                 sesiones=Count("id"),
                 ingresos=Sum("payment")
             )
+            .order_by("therapist__id", "hour")
         )
         
-        if not stats:
+        # Agrupar las citas por terapeuta para recolectar las horas
+        terapeutas_agrupados = {}
+        for stat in stats:
+            therapist_id = stat["therapist__id"]
+            if therapist_id not in terapeutas_agrupados:
+                terapeutas_agrupados[therapist_id] = {
+                    "id": therapist_id,
+                    "terapeuta": stat['terapeuta'] or "Sin nombre",
+                    "sesiones": 0,
+                    "ingresos": 0.0,
+                    "raiting_original": 0.0,
+                    "horas_citas": []
+                }
+            terapeutas_agrupados[therapist_id]["sesiones"] += 1
+            terapeutas_agrupados[therapist_id]["ingresos"] += float(stat['ingresos'] or 0)
+            if stat["hour"]:
+                terapeutas_agrupados[therapist_id]["horas_citas"].append(stat["hour"].strftime("%H:%M"))
+
+        stats_final = list(terapeutas_agrupados.values())
+
+        if not stats_final:
             return []
-        
+
         # 2. Calculamos promedios globales
-        total_sesiones = sum(s['sesiones'] for s in stats)
-        total_ingresos = sum(float(s['ingresos'] or 0) for s in stats)  
-        num_terapeutas = len(stats)
+        total_sesiones = sum(s['sesiones'] for s in stats_final)
+        total_ingresos = sum(float(s['ingresos'] or 0) for s in stats_final)
+        num_terapeutas = len(stats_final)
         
         prom_sesiones = total_sesiones / num_terapeutas if num_terapeutas > 0 else 1.0
         prom_ingresos = total_ingresos / num_terapeutas if num_terapeutas > 0 else 1.0
         
         # 3. Calcular rating original para cada terapeuta
-        for stat in stats:
+        for stat in stats_final:
             sesiones = stat['sesiones']
             ingresos = float(stat['ingresos'] or 0)  
             
@@ -74,19 +95,20 @@ class StatisticsService:
             stat['raiting_original'] = rating_original
         
         # 4. Encontrar el máximo rating original
-        max_original = max(s['raiting_original'] for s in stats) if stats else 1.0
+        max_original = max(s['raiting_original'] for s in stats_final) if stats_final else 1.0
         
         # 5. Escalar a 5 puntos y formatear resultado
         resultado = []
-        for stat in stats:
+        for stat in stats_final:
             scaled_rating = (stat['raiting_original'] / max_original) * 5
             
             resultado.append({
-                "id": stat["therapist__id"],
-                "terapeuta": stat['terapeuta'] or "Sin nombre",   
+                "id": stat["id"],
+                "terapeuta": stat['terapeuta'],
                 "sesiones": stat["sesiones"],
                 "ingresos": float(stat["ingresos"]) if stat["ingresos"] else 0.0,
-                "raiting": round(scaled_rating, 2) 
+                "raiting": round(scaled_rating, 2),
+                "horas_citas": stat["horas_citas"]
             })
         
         return resultado
@@ -94,12 +116,12 @@ class StatisticsService:
     def get_ingresos_por_dia_semana(self, start, end):
         
         dias_semana = {      
-            1: "Lunes",      
-            2: "Martes",     
-            3: "Miercoles",   
-            4: "Jueves",    
-            5: "Viernes",      
-            6: "Sabado"     
+            2: "Lunes",      
+            3: "Martes",     
+            4: "Miercoles",   
+            5: "Jueves",    
+            6: "Viernes",      
+            7: "Sabado"     
         }
         
         ingresos_raw = (
@@ -124,8 +146,8 @@ class StatisticsService:
 
     def get_sesiones_por_dia_semana(self, start, end):
         dias_semana = {
-            1: "Lunes", 2: "Martes", 3: "Miercoles",
-            4: "Jueves", 5: "Viernes", 6: "Sabado"
+            2: "Lunes", 3: "Martes", 4: "Miercoles",
+            5: "Jueves", 6: "Viernes", 7: "Sabado"
         }
         
         sesiones_raw = (

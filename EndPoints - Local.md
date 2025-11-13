@@ -256,7 +256,7 @@ Todas las APIs siguen el patrón: `/api/[modulo]/[recurso]/`
 - **Auth:** Basic Auth
   - Crear usuario con 'python manage.py createsuperuser' desde el codigo fuente.
 - **Headers:**
-  ```
+  ```F
   Content-Type: application/json
   ```
 - **Body (raw JSON):**
@@ -2249,6 +2249,7 @@ Todas las APIs siguen el patrón: `/api/[modulo]/[recurso]/`
     "document_type_id": 4,
     "document_number": "12345000",
     "last_name_paternal": "Pérez",
+    "license_number": "1234",
     "last_name_maternal": "García",
     "first_name": "Juan Carlos",
     "birth_date": "1990-05-15T00:00:00Z",

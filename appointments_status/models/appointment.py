@@ -43,7 +43,6 @@ class Appointment(models.Model):
     # Campos de auditoría
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Fecha de actualización")
-    deleted_at = models.DateTimeField(blank=True, null=True, verbose_name="Fecha de eliminación")
     
     class Meta:
         db_table = 'appointments'
@@ -100,8 +99,3 @@ class Appointment(models.Model):
         if self.appointment_date is None:
             return False
         return self.appointment_date.date() >= timezone.now().date()
-    
-    def soft_delete(self):
-        """Marca la cita como eliminada (soft delete)"""
-        self.deleted_at = timezone.now()
-        self.save(update_fields=['deleted_at'])
