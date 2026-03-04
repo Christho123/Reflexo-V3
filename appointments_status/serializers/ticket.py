@@ -40,9 +40,8 @@ class TicketSerializer(serializers.ModelSerializer):
             'is_pending',
             'created_at',
             'updated_at',
-            'deleted_at',
         ]
-        read_only_fields = ['id', 'payment_date', 'created_at', 'updated_at', 'deleted_at']
+        read_only_fields = ['id', 'payment_date', 'created_at', 'updated_at']
         
     def validate_ticket_number(self, value):
         """Validación personalizada para el número de ticket"""

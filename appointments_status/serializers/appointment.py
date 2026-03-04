@@ -67,9 +67,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
             'is_pending',
             'created_at',
             'updated_at',
-            'deleted_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'deleted_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
         
     def validate_appointment_date(self, value):
         """Validación personalizada para la fecha de la cita"""

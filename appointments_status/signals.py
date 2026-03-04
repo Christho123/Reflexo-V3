@@ -28,18 +28,6 @@ def create_ticket_for_appointment(sender, instance, created, **kwargs):
         # IMPORTANTE: update() para no disparar otro post_save
         Appointment.objects.filter(pk=instance.pk).update(ticket_number=ticket_number)
 
-
-# Función obsoleta - ahora usa TicketService.generate_ticket_number()
-# def generate_unique_ticket_number() -> str:
-#     """
-#     Ticket legible basado en timestamp + microsegundos (string).
-#     18 dígitos aprox. (cómodo para VARCHAR(20)).
-#     """
-#     now = timezone.now()
-#     # Ej: 20250829 163303 123456  -> '20250829163303123456'
-#     return f"{now.strftime('%Y%m%d%H%M%S')}{now.microsecond:06d}"
-
-
 @receiver(post_save, sender=Appointment)
 def update_ticket_when_appointment_changes(sender, instance, created, **kwargs):
     """

@@ -23,6 +23,9 @@ class TherapistSerializer(serializers.ModelSerializer):
     province_name = serializers.CharField(source='province.name', read_only=True)
     district_name = serializers.CharField(source='district.name', read_only=True)
     
+    # Hago document_number opcional y permito blancos
+    document_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
     # Campos para escritura (crear/actualizar)
     region_id = serializers.PrimaryKeyRelatedField(
         queryset=Region.objects.all(), 
@@ -105,6 +108,10 @@ class TherapistSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_document_number(self, value):
+        # Si el valor es nulo o vacío, no se aplica validación
+        if not value:
+            return value
+
         # Obtener el tipo de documento desde los datos iniciales o la instancia
         doc_type_id = self.initial_data.get("document_type_id")
         

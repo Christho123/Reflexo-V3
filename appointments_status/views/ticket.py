@@ -11,7 +11,6 @@ from ..services import TicketService
 class TicketViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gestionar los tickets.
-    Basado en la estructura del módulo Laravel 05_appointments_status.
     """
     
     queryset = Ticket.objects.all()
@@ -21,7 +20,6 @@ class TicketViewSet(viewsets.ModelViewSet):
         'ticket_number', 
         'payment_type', 
         'status', 
-        'is_active'
     ]
     search_fields = [
         'ticket_number', 
@@ -50,9 +48,6 @@ class TicketViewSet(viewsets.ModelViewSet):
         if payment_date:
             queryset = queryset.filter(payment_date__date=payment_date)
         
-        # TODO: (Dependencia externa) - Agregar filtros cuando estén disponibles:
-        # appointment_id = self.request.query_params.get('appointment_id', None)
-        
         return queryset
     
     def create(self, request, *args, **kwargs):
@@ -70,7 +65,7 @@ class TicketViewSet(viewsets.ModelViewSet):
     
     def destroy(self, request, *args, **kwargs):
         """
-        Elimina un ticket (soft delete).
+        Elimina un ticket de forma permanente.
         """
         ticket_id = kwargs.get('pk')
         return self.service.delete(ticket_id)

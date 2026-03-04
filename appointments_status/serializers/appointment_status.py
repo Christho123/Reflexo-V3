@@ -17,12 +17,10 @@ class AppointmentStatusSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'description',
-            # 'appointments_count',  # Temporalmente comentado
             'created_at',
             'updated_at',
-            'deleted_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'deleted_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
     
     def validate_name(self, value):
         """Validación personalizada para el nombre del estado"""
@@ -35,8 +33,7 @@ class AppointmentStatusSerializer(serializers.ModelSerializer):
         # Verificar que no exista otro estado activo con el mismo nombre (excluyendo soft deleted)
         instance = self.instance
         if AppointmentStatus.objects.filter(
-            name=value, 
-            deleted_at__isnull=True
+            name=value 
         ).exclude(id=instance.id if instance else None).exists():
             raise serializers.ValidationError(
                 "Ya existe un estado de cita activo con este nombre."

@@ -25,8 +25,8 @@ class GetMetricsView(APIView):
             end_date = datetime.strptime(end, '%Y-%m-%d')
             
             # Convertir a timezone-aware datetime
-            start_date = timezone.make_aware(start_date)
-            end_date = timezone.make_aware(end_date.replace(hour=23, minute=59, second=59))
+            #start_date = timezone.make_aware(start_date)
+            #end_date = timezone.make_aware(end_date.replace(hour=23, minute=59, second=59))
             
             if start_date > end_date:
                 return Response(

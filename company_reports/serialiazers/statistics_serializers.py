@@ -6,6 +6,7 @@ class TerapeutaSerializer(serializers.Serializer):
     sesiones = serializers.IntegerField()
     ingresos = serializers.FloatField()
     raiting = serializers.FloatField()  # 
+    horas_citas = serializers.ListField(child=serializers.CharField(), required=False)
 
 class MetricasSerializer(serializers.Serializer):
     ttlpacientes = serializers.IntegerField()

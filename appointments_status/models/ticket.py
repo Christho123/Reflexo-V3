@@ -43,11 +43,6 @@ class Ticket(models.Model):
     # Campos de auditoría
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Fecha de actualización")
-    deleted_at = models.DateTimeField(
-        null=True, 
-        blank=True, 
-        verbose_name="Fecha de eliminación"
-    )
     is_active = models.BooleanField(default=True, verbose_name="Activo")
     
     class Meta:
@@ -84,16 +79,3 @@ class Ticket(models.Model):
         """Marca el ticket como cancelado"""
         self.status = 'cancelled'
         self.save(update_fields=['status', 'updated_at'])
-    
-    def soft_delete(self):
-        """Eliminación suave del ticket"""
-        from django.utils import timezone
-        self.is_active = False
-        self.deleted_at = timezone.now()
-        self.save(update_fields=['is_active', 'deleted_at', 'updated_at'])
-    
-    def restore(self):
-        """Restaura un ticket eliminado"""
-        self.is_active = True
-        self.deleted_at = None
-        self.save(update_fields=['is_active', 'deleted_at', 'updated_at'])

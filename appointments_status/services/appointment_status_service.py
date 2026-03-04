@@ -2,12 +2,12 @@ from django.db import transaction
 from rest_framework import status
 from rest_framework.response import Response
 from ..models import AppointmentStatus
+from ..serializers import AppointmentStatusSerializer
 
 
 class AppointmentStatusService:
     """
     Servicio para gestionar las operaciones de estados de citas.
-    Basado en la estructura del módulo Laravel 05_appointments_status.
     """
     
     def create(self, data):
@@ -20,7 +20,12 @@ class AppointmentStatusService:
         Returns:
             Response: Respuesta con el estado creado o error
         """
-        pass
+        # Implementación para crear un nuevo estado de cita
+        serializer = AppointmentStatusSerializer(data=data)
+        if serializer.is_valid():
+            status_obj = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get_by_id(self, status_id):
         """
@@ -32,7 +37,12 @@ class AppointmentStatusService:
         Returns:
             Response: Respuesta con el estado o error si no existe
         """
-        pass
+        try:
+            status_obj = AppointmentStatus.objects.get(id=status_id)
+            serializer = AppointmentStatusSerializer(status_obj)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except AppointmentStatus.DoesNotExist:
+            return Response({'error': 'Estado de cita no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     
     def update(self, status_id, data):
         """
@@ -45,11 +55,19 @@ class AppointmentStatusService:
         Returns:
             Response: Respuesta con el estado actualizado o error
         """
-        pass
+        try:
+            status_obj = AppointmentStatus.objects.get(id=status_id)
+            serializer = AppointmentStatusSerializer(status_obj, data=data, partial=True)
+            if serializer.is_valid():
+                status_obj = serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except AppointmentStatus.DoesNotExist:
+            return Response({'error': 'Estado de cita no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     
     def delete(self, status_id):
         """
-        Elimina un estado de cita (soft delete).
+        Elimina un estado de cita de forma permanente.
         
         Args:
             status_id (int): ID del estado a eliminar
@@ -57,7 +75,20 @@ class AppointmentStatusService:
         Returns:
             Response: Respuesta de confirmación o error
         """
-        pass
+        try:
+            status_obj = AppointmentStatus.objects.get(id=status_id)
+            
+            # Verificar si hay citas que usan este estado antes de eliminar
+            if status_obj.appointment_set.exists():
+                return Response(
+                    {'error': 'No se puede eliminar el estado porque tiene citas asociadas.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            status_obj.delete() # Hard delete
+            return Response({'message': 'Estado de cita eliminado permanentemente'}, status=status.HTTP_204_NO_CONTENT)
+        except AppointmentStatus.DoesNotExist:
+            return Response({'error': 'Estado de cita no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     
     def list_all(self, filters=None):
         """
@@ -69,7 +100,12 @@ class AppointmentStatusService:
         Returns:
             Response: Respuesta con la lista de estados
         """
-        pass
+        queryset = AppointmentStatus.objects.all()
+        if filters:
+            # Aquí podrías aplicar filtros adicionales si los hubiera
+            pass
+        serializer = AppointmentStatusSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     def get_by_name(self, name):
         """
@@ -81,16 +117,20 @@ class AppointmentStatusService:
         Returns:
             Response: Respuesta con el estado o error si no existe
         """
-        pass
+        try:
+            status_obj = AppointmentStatus.objects.get(name=name)
+            serializer = AppointmentStatusSerializer(status_obj)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except AppointmentStatus.DoesNotExist:
+            return Response({'error': 'Estado de cita no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     
     def get_active_statuses(self):
         """
         Obtiene todos los estados activos.
         
-        Args:
-            None
-            
         Returns:
             Response: Respuesta con los estados activos
         """
-        pass
+        queryset = AppointmentStatus.objects.all() # Asumiendo que todos los estados son "activos" ahora que no hay soft-delete
+        serializer = AppointmentStatusSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

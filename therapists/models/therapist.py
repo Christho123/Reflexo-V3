@@ -11,7 +11,7 @@ class Therapist(models.Model):
         verbose_name="Tipo de documento"
     )
 
-    document_number = models.CharField(max_length=20, blank=False, null=True, unique=True, verbose_name="Número de documento")
+    document_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Número de documento")
     license_number = models.CharField(max_length=50, unique=True, null=True, blank=True, verbose_name="Numero de licencia")
     last_name_paternal = models.CharField(max_length=150, verbose_name="Apellido paterno")
     last_name_maternal = models.CharField(max_length=150, verbose_name="Apellido materno")
@@ -23,7 +23,7 @@ class Therapist(models.Model):
 
     # Información de contacto
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Teléfono")
-    email = models.CharField(max_length=254, verbose_name="Email")
+    email = models.CharField(max_length=254, unique=True, blank=True, null=True, verbose_name="Email")
 
     # Ubicación
     region = models.ForeignKey(Region, on_delete=models.CASCADE, verbose_name="Región")
